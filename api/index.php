@@ -11,7 +11,8 @@ $param = $argc[1];
 
 $types = array('image/png', 'image/jpeg');
 $size = 2097152;
-$path = '/api/product_images/';
+$path = $_SERVER['DOCUMENT_ROOT'] . '/api/product_images/';
+$error = [];
 
 if (empty($method)) {
     echo 'Задан пустой запрос';
@@ -45,27 +46,26 @@ switch ($_SERVER['REQUEST_METHOD']) {
                 $manufacturer = $_POST['manufacturer'];
                 $text = $_POST['text'];
                 $tags = $_POST['tags'];
-                $sql = "INSERT INTO `product` (`title`, `manufacturer`, `text`, `tags`) VALUES
-('$title', '$manufacturer', '$text', '$tags')";
-                echo $sql;
                 // Проверяем тип файла
                 if (!in_array($_FILES['picture']['type'], $types)) {
                     $error['image'] = 'Invalidfileformat';
                 } else {
                     //Перемещаем в папку назначения с форматом
-                    if ($_FILES['picture']['type'] == 'image/png')
-                        if (!@copy($_FILES['picture']['tmp_name'], $path . $_FILES['picture'][$db->insert_id . '.png']))
-                            $error['image'] = 'undefinederror';
-                    if ($_FILES['picture']['type'] == 'image/jpeg')
-                        if (!@copy($_FILES['picture']['tmp_name'], $path . $_FILES['picture'][$db->insert_id . '.jpeg']))
-                            $error['image'] = 'undefinederror';
+                    if (!move_uploaded_file($_FILES['picture']['tmp_name'], $path . $_FILES['picture']['name'])) {
+                        $error['image'] = 'undefinederror';
+                    } else {
+                        $imagename = $_FILES['picture']['name'];
+                        $sql = "INSERT INTO `product` (`title`, `manufacturer`, `text`, `tags`,`imagename`) VALUES
+('$title', '$manufacturer', '$text', '$tags','$imagename')";
+                        $result = $db->query($sql);
+                    };
                 };
-                $result = $db->query($sql);
-                if ($db->insert_id == 0) $error['title'] = 'already exists';
+
                 if ($result && empty($error)) {
                     $func->response(201, 'Successful', ['status' => true, 'post_id' => $db->insert_id]);
                 } else {
-                    $func->response(400, 'Creating error', ['status' => false, "message" => $errors]);
+                    if ($db->insert_id == 0) $error['title'] = 'already exists';
+                    $func->response(400, 'Creating error', ['status' => false, "message" => $error]);
                 }
                 break;
         }
