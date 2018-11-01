@@ -24,5 +24,15 @@
     <input name="picture" type="file" /><br>
     <input type="submit"/>
 </form>
+
+<form action="api/product/37" enctype="multipart/form-data" method="post">
+    <h2>Product #</h2>
+    <input type="text" name="title" placeholder="Название"><br>
+    <input type="text" name="manufacturer" placeholder="Производитель"><br>
+    <input type="text" name="text" placeholder="Описание"><br>
+    <input type="text" name="tags" placeholder="Теги через запятую"><br>
+    <input name="picture" type="file" /><br>
+    <input type="submit"/>
+</form>
 </body>
 </html>
